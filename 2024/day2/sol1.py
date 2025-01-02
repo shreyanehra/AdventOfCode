@@ -181,14 +181,7 @@ class solution:
         
 
                     
-
-                    
-
-
-        
-
-
 if __name__ == "__main__":
-    sol = solution("D:\\ACADS\\AOC\\2024\\day2\\input.txt")
+    sol = solution("D:\\ACADS\\AOC\\2024\\day2\\input_beby.txt")
     print(sol.brute_force_damp(sol.process_file()))
     
