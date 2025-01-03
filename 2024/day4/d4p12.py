@@ -59,7 +59,7 @@ class Solution:
         for d in range(row_len + col_len - 1):
             anti_diagonal = []
             for i in range(row_len):
-                j = d - i + row_len -1
+                j = d - i + col_len -1
                 if 0 <= j < col_len:
                     anti_diagonal.append(self.matrix[i][j])
             if anti_diagonal:
