@@ -1,6 +1,6 @@
 #writing this as a function in solution class
 
-from aoc1_solution import Solution
+from d1p1 import Solution
 class Solution2:
     def __init__(self, file_path):
         self.file_path = file_path
