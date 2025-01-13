@@ -3,55 +3,73 @@ import numpy as np
 class Solution2:
     def __init__(self, filepath):
         self.filepath = filepath
+        self.sol2 = Solution(self.filepath)
 
-    def harmonic_antinodes(self):
-        sol1 = Solution(self.filepath)
+    def define_grid_find_antenas(self):
+        self.grid = self.sol2.process_file() #assigns the grid
+        self.dict_antenas = self.sol2.antena_types(self.grid)
+        self.rows = len(self.grid)
+        self.cols = len(self.grid[0])
 
-        self.grid = sol1.process_file()
-        self.dict_antenas = sol1.antena_types(self.grid)
-        
-    def is_in_grid(self, pos):
-        self.rows = len(self.grid[0])
-        self.cols = len(self.grid)
-        if 0<=pos[0]<self.rows and 0<=pos[1]<self.cols:
+    #f = unique frequency of a particular antena type
+    def pos_on_grid(self, f, index_in_dicts_keys_value ):
+        self.define_grid_find_antenas()
+        # returning corresponding x and y as (x,y) - a tuple
+        return (self.dict_antenas[f][index_in_dicts_keys_value][0], self.dict_antenas[f][index_in_dicts_keys_value][1])
+
+    def find_possible_antinode_pos(self, pos1, pos2, factor):
+        '''
+        pos1 : position of antena 1
+        pos2 : position of antena2
+        return : 2 tuples possible antenode positions
+        '''
+        pos1 = np.array(pos1)
+        pos2 = np.array(pos2)
+        possible_an1 = pos1 - factor * (pos2 - pos1)
+        possible_an2 = pos2 + factor*(pos2 - pos1)
+
+        return (possible_an1, possible_an2)
+
+    def is_inside_grid(self, pos):
+        self.define_grid_find_antenas()
+        if(0<=pos[0]<self.rows and 0<=pos[1]<self.cols):
             return True
+        return False
+
+    def find_all_harmonic_antinodes(self):
+        antinodes = set() #initialising empty set 
+        self.define_grid_find_antenas()
         
-    def fetch_vector_from_dict(self, f, nth_index_in_dict_key):
-        return self.dict_antenas[f][nth_index_in_dict_key]
-    def add_vec(self, f, pos, vector):
-        return self.fetch_vector_from_dict(f, pos) + vector
-        #assuming inputs are numpy arrays 
-        
-    def sub_vec(self,f, pos, vector):
-        #assuming inputs are numpy arrays 
-        return np.array(self.fetch_vector_from_dict(f, pos)) - np.array(vector)
-    
-    def calculate_distance_vector(self, f, antena1_position, antena2_position):
-        vec_x = self.fetch_vector_from_dict(f,antena2_position)[0] - self.fetch_vector_from_dict(f,antena1_position)[0]
-        vec_y = self.fetch_vector_from_dict(f,antena2_position)[1] - self.fetch_vector_from_dict(f,antena1_position)[1]
-        return (vec_x,vec_y) 
-    def find_antinodes(self):
-        antinodes = set()
-        self.harmonic_antinodes()
+
         for f in self.dict_antenas:
-            num_antenas_f_particular = len(self.dict_antenas[f])
-            for a1 in range(num_antenas_f_particular-1):
-                for a2 in range(a1+1, num_antenas_f_particular):
-                    vector = self.calculate_distance_vector(f, a1, a2)
-                    an1 = self.sub_vec(f, a1, vector)
-                    while self.is_in_grid(an1):
-                        antinodes.add(an1)
-                        vector
-                        an1 = self.sub_vec(f, a1, vector)
-                    an2 = self.add_vec(f, a2, vector)
-                    while self.is_in_grid(an2):
-                        antinodes.add(an2)
-                        vector*=2
-                        an2 = self.add_vec(f, a2, vector)
+            for antena1 in range(len(self.dict_antenas[f])-1):
+                for antena2 in range(antena1+1,len(self.dict_antenas[f])):
+                    
+                    pos_a1 = self.pos_on_grid(f, antena1)
+                    pos_a2 = self.pos_on_grid(f, antena2)
+                    antinodes.add(pos_a1)
+                    antinodes.add(pos_a2)
+                    factor = 1
+                    an1 = self.find_possible_antinode_pos(pos_a1, pos_a2, factor)[0]                 
+                    an2 = self.find_possible_antinode_pos(pos_a1, pos_a2, factor)[1]
+                    while( self.is_inside_grid(an1) or self.is_inside_grid(an2)):
+                        an1 = tuple(an1)
+                        an2 = tuple(an2)
+                        if self.is_inside_grid(an2) and self.is_inside_grid(an1):
+                            antinodes.add(an1)
+                            antinodes.add(an2)
+                        elif self.is_inside_grid(an1):
+                            antinodes.add(an1)
+                        elif self.is_inside_grid(an2):
+                            antinodes.add(an2)
+                        factor+=1
+                        an1 = self.find_possible_antinode_pos(pos_a1, pos_a2, factor)[0]
+                        print(factor)
+                        an2 = self.find_possible_antinode_pos(pos_a1, pos_a2, factor)[1]
         return len(antinodes)
 
 if __name__ == "__main__":
     filepath = "D:\\ACADS\\AOC\\day8\\input.txt"
     sol2 = Solution2(filepath)
-    print(sol2.find_antinodes())
+    print(sol2.find_all_harmonic_antinodes())
             
